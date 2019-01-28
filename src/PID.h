@@ -1,8 +1,12 @@
 #ifndef PID_H
 #define PID_H
 
-class PID {
- public:
+#include <chrono>
+using namespace std;
+
+class PID
+{
+public:
   /**
    * Constructor
    */
@@ -15,15 +19,15 @@ class PID {
 
   /**
    * Initialize PID.
-   * @param (Kp_, Ki_, Kd_) The initial PID coefficients
+   * @param (Kp, Ki, Kd) The initial PID coefficients
    */
-  void Init(double Kp_, double Ki_, double Kd_);
+  void Init(double Kp, double Ki, double Kd);
 
   /**
    * Update the PID error variables given cross track error.
    * @param cte The current cross track error
    */
-  void UpdateError(double cte);
+  double UpdateError(double cte);
 
   /**
    * Calculate the total PID error.
@@ -31,20 +35,30 @@ class PID {
    */
   double TotalError();
 
- private:
+private:
+  void twiddle();
+
+private:
   /**
    * PID Errors
    */
-  double p_error;
-  double i_error;
-  double d_error;
+  double p_error_;
+  double i_error_;
+  double d_error_;
 
   /**
    * PID Coefficients
-   */ 
-  double Kp;
-  double Ki;
-  double Kd;
+   */
+  double Kp_;
+  double Ki_;
+  double Kd_;
+
+  double p_[3];
+  double d_[3];
+  double t_error_;
+
+  double prev_cte_; // cte on previous iteration
+  chrono::time_point<chrono::system_clock> prev_tp;
 };
 
 #endif  // PID_H
