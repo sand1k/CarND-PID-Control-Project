@@ -32,9 +32,14 @@ string hasData(string s) {
 
 int main(int argc, char *argv[])
 {
-  double kp = 0.2;
-  double ki = 0.0004;
-  double kd = 0.08;
+  // Try values: p = 0.213589 i = 0.000480 d = 0.079936
+  // Try values: p = 0.209289 i = 0.000480 d = 0.079936
+  //double kp = 0.176545; //0.2;
+  //double ki = 0.000441; //0.0004;
+  //double kd = 0.076355; //0.08;
+  double kp = 0.209289;
+  double ki = 0.000480;
+  double kd = 0.079936;
   if (argc > 3)
   {
     kp = atof(argv[1]);
@@ -76,14 +81,14 @@ int main(int argc, char *argv[])
           steer_value = pid.UpdateError(cte);
 
           // DEBUG
-          std::cout << "CTE: " << cte << " Steering Value: " << steer_value 
-                    << std::endl;
+          //std::cout << "CTE: " << cte << " Steering Value: " << steer_value 
+          //          << std::endl;
 
           json msgJson;
           msgJson["steering_angle"] = steer_value;
-          msgJson["throttle"] = 0.5;
+          msgJson["throttle"] = 0.45;
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
-          std::cout << msg << std::endl;
+          //std::cout << msg << std::endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
         }  // end "telemetry" if
       } else {

@@ -4,6 +4,8 @@
 #include <chrono>
 using namespace std;
 
+#define TWIDDLE_ITERATIONS 1500
+
 class PID
 {
 public:
@@ -35,6 +37,8 @@ public:
    */
   double TotalError();
 
+  void twiddle(double err);
+
 private:
   void twiddle();
 
@@ -55,7 +59,8 @@ private:
 
   double p_[3];
   double d_[3];
-  double t_error_;
+  double best_error_;
+  double total_error_;
 
   double prev_cte_; // cte on previous iteration
   chrono::time_point<chrono::system_clock> prev_tp;
