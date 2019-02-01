@@ -3,6 +3,20 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## Description
+
+The code in [PID.h](https://github.com/sand1k/CarND-PID-Control-Project/blob/master/src/PID.h) and [PID.cpp](https://github.com/sand1k/CarND-PID-Control-Project/blob/master/src/PID.cpp) implements a PID controller.
+It consists of 3 components: `P`, `I` and `D`, which have the following effect:
+
+- `P` - proportional control component, it sets steering angle proportionally to CTE (cross track error) and forces the car to minimize CTE. If we control the steering angle only by the `P` component, the car will systematically overshoot the desired position on the track.
+- `I` - integral control component, which is proportional to sum of all observed CTEs. This component fixes systematic bias, in the project we can assume that we have a systematic bias during turns, because in this case to move in the middle of the track wheels should be constantly turned. So `I` component helps to behave more smoothly during turns.
+- `D` - differential control component. It is proportional to CTE change in time and it helps to gracefully approach the target trajectory without overshooting.
+
+I've chosen final parameters using twiddle algorithm. At first I tuned hyperparameters manually and used values (0.2; 0.0004; 0.08) as initial values for twiddle algorithm. I tuned `TWIDDLE_ITERATIONS` parameter in such a way that one twiddling iteration equals one lap on a track. After twiddling for sever hours I got final values (0.150727; 0.000565;0.0795). By default, the program uses these coefficients. To launch the program in twiddle mode use option `--twiddle`. Twiddle mode by default starts with coefficients (0.2; 0.0004; 0.08). To launch the program with custom PID coefficients use `--params`, for example
+```
+./pid --params 0.2 0.0004 0.08
+```
+
 ## Dependencies
 
 * cmake >= 3.5
@@ -19,7 +33,7 @@ Self-Driving Car Engineer Nanodegree Program
   * Run either `./install-mac.sh` or `./install-ubuntu.sh`.
   * If you install from source, checkout to commit `e94b6e1`, i.e.
     ```
-    git clone https://github.com/uWebSockets/uWebSockets 
+    git clone https://github.com/uWebSockets/uWebSockets
     cd uWebSockets
     git checkout e94b6e1
     ```
@@ -33,7 +47,7 @@ Fellow students have put together a guide to Windows set-up for the project [her
 1. Clone this repo.
 2. Make a build directory: `mkdir build && cd build`
 3. Compile: `cmake .. && make`
-4. Run it: `./pid`. 
+4. Run it: `./pid`.
 
 Tips for setting up your environment can be found [here](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/f758c44c-5e40-4e01-93b5-1a82aa4e044f/concepts/23d376c7-0195-4276-bdf0-e02f1f3c665d)
 
@@ -95,4 +109,3 @@ still be compilable with cmake and make./
 
 ## How to write a README
 A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
-

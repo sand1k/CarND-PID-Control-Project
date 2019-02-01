@@ -32,26 +32,38 @@ string hasData(string s) {
 
 int main(int argc, char *argv[])
 {
-  // Try values: p = 0.213589 i = 0.000480 d = 0.079936
-  // Try values: p = 0.209289 i = 0.000480 d = 0.079936
-  //double kp = 0.176545; //0.2;
-  //double ki = 0.000441; //0.0004;
-  //double kd = 0.076355; //0.08;
-  double kp = 0.209289;
-  double ki = 0.000480;
-  double kd = 0.079936;
-  if (argc > 3)
+  double kp = 0.150727;
+  double ki = 0.000565;
+  double kd = 0.0795;
+  bool do_twiddle = false;
+  bool params_set = false;
+  for (int i = 1; i < argc; i++)
   {
-    kp = atof(argv[1]);
-    ki = atof(argv[2]);
-    kd = atof(argv[3]);
+    if (strcmp(argv[i], "--params") == 0 && i + 3 < argc)
+    {
+      kp = atof(argv[i + 1]);
+      ki = atof(argv[i + 2]);
+      kd = atof(argv[i + 3]);
+      params_set = true;
+    }
+    else if (strcmp(argv[i], "--twiddle") == 0)
+    {
+      if (!params_set)
+      {
+        kp = 0.2;
+        ki = 0.0004;
+        kd = 0.08;
+      }
+      do_twiddle = true;
+    }
   }
   std::cout << "PID: " << kp << " " << ki << " " << kd << std::endl;
+  std::cout << "Twiddle: " << do_twiddle << std::endl;
 
   uWS::Hub h;
 
   PID pid;
-  pid.Init(kp, ki, kd);
+  pid.Init(kp, ki, kd, do_twiddle);
 
   h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, 
                      uWS::OpCode opCode) {
@@ -70,7 +82,7 @@ int main(int argc, char *argv[])
           // j[1] is the data JSON object
           double cte = std::stod(j[1]["cte"].get<string>());
           double speed = std::stod(j[1]["speed"].get<string>());
-          double angle = std::stod(j[1]["steering_angle"].get<string>());
+          //double angle = std::stod(j[1]["steering_angle"].get<string>());
           double steer_value;
           /**
            * TODO: Calculate steering value here, remember the steering value is
@@ -78,11 +90,7 @@ int main(int argc, char *argv[])
            * NOTE: Feel free to play around with the throttle and speed.
            *   Maybe use another PID controller to control the speed!
            */
-          steer_value = pid.UpdateError(cte);
-
-          // DEBUG
-          //std::cout << "CTE: " << cte << " Steering Value: " << steer_value 
-          //          << std::endl;
+          steer_value = pid.CalcSteering(cte, speed);
 
           json msgJson;
           msgJson["steering_angle"] = steer_value;
@@ -116,6 +124,6 @@ int main(int argc, char *argv[])
     std::cerr << "Failed to listen to port" << std::endl;
     return -1;
   }
-  
+
   h.run();
 }

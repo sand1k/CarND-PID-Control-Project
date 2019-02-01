@@ -5,10 +5,7 @@
 
 PID::PID()
 {
-  p_error_ = 0;
   i_error_ = 0;
-  d_error_ = 0;
-
   prev_cte_ = 0;
   prev_tp = chrono::system_clock::now();
 }
@@ -17,11 +14,12 @@ PID::~PID()
 {
 }
 
-void PID::Init(double Kp, double Ki, double Kd)
+void PID::Init(double Kp, double Ki, double Kd, bool do_twiddle)
 {
   Kp_ = Kp;
   Ki_ = Ki;
   Kd_ = Kd;
+  do_twiddle_ = do_twiddle;
 
   p_[0] = Kp;
   p_[1] = Ki;
@@ -33,7 +31,7 @@ void PID::Init(double Kp, double Ki, double Kd)
   total_error_ = 0;
 }
 
-double PID::UpdateError(double cte)
+double PID::CalcSteering(double cte, double speed)
 {
   static int steps = 0;
 
@@ -41,38 +39,29 @@ double PID::UpdateError(double cte)
   std::chrono::duration<double> time_diff = cur_tp - prev_tp;
   prev_tp = cur_tp;
 
-  p_error_ = cte;
-  d_error_ = (cte - prev_cte_) / time_diff.count();
+  double p_error_ = cte;
+  double d_error_ = (cte - prev_cte_) / time_diff.count();
   prev_cte_ = cte;
   i_error_ += cte * time_diff.count();
 
   double steering = -Kp_ * p_error_ - Kd_ * d_error_ - Ki_ * i_error_;
-
-  /*printf("p_err=%f d_err=%f i_err=%f time_diff=%f tot=%f\n",
-         p_error_ * Kp_,
-         d_error_ * Kd_,
-         i_error_ * Ki_,
-         time_diff.count(),
-         steering);*/
 
   steering = (steering < -1.0) ? -1.0 : steering;
   steering = (steering > 1.0) ? 1.0 : steering;
 
   total_error_ += fabs(cte);
 
-  if (steps++ == TWIDDLE_ITERATIONS)
+  if (speed > 45 && do_twiddle_)
   {
-    twiddle(total_error_);
-    steps = 0;
-    total_error_ = 0;
+    if (steps++ == TWIDDLE_ITERATIONS)
+    {
+      twiddle(total_error_);
+      steps = 0;
+      total_error_ = 0;
+    }
   }
 
   return steering;
-}
-
-double PID::TotalError()
-{
-  return 0;
 }
 
 void PID::twiddle(double err)

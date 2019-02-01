@@ -4,7 +4,7 @@
 #include <chrono>
 using namespace std;
 
-#define TWIDDLE_ITERATIONS 1500
+#define TWIDDLE_ITERATIONS 2200
 
 class PID
 {
@@ -23,32 +23,25 @@ public:
    * Initialize PID.
    * @param (Kp, Ki, Kd) The initial PID coefficients
    */
-  void Init(double Kp, double Ki, double Kd);
+  void Init(double Kp, double Ki, double Kd, bool do_twiddle);
 
   /**
-   * Update the PID error variables given cross track error.
+   * Calculate steering angle.
    * @param cte The current cross track error
+   * @param speed The current speed
    */
-  double UpdateError(double cte);
+  double CalcSteering(double cte, double speed);
 
-  /**
-   * Calculate the total PID error.
-   * @output The total PID error
-   */
-  double TotalError();
-
+private:
   void twiddle(double err);
 
 private:
-  void twiddle();
-
-private:
   /**
-   * PID Errors
+   * PID Varialbes
    */
-  double p_error_;
-  double i_error_;
-  double d_error_;
+  double i_error_; // integral error
+  double prev_cte_; // cte on previous iteration
+  chrono::time_point<chrono::system_clock> prev_tp; // time point of previous cte measurement
 
   /**
    * PID Coefficients
@@ -57,13 +50,15 @@ private:
   double Ki_;
   double Kd_;
 
+  /**
+   * Varialbes to perform twiddle
+   */
+  bool do_twiddle_;
   double p_[3];
   double d_[3];
   double best_error_;
   double total_error_;
 
-  double prev_cte_; // cte on previous iteration
-  chrono::time_point<chrono::system_clock> prev_tp;
 };
 
 #endif  // PID_H
